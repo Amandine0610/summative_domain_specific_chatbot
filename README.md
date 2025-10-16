@@ -3,7 +3,7 @@
 A healthcare question chatbot, built using a fine-tuned Hugging Face Transformer model. It is an end-to-end project from data preprocessing to deployment with generative question-answering for medical and health questions.
 
 ---
-## ???? Project Overview
+##  Project Overview
 
 The healthcare chatbot is designed to:
 - Parse and respond to health-related questions
@@ -69,7 +69,7 @@ python web_chatbot.py
 
 ---
 
-## ???? Evaluation
+## Evaluation
 
 Evaluate your chatbot using BLEU and ROUGE-L:
 ```sh
@@ -81,7 +81,7 @@ python evaluate.py
 
 ---
 
-## ???? Hyperparameter Tuning
+## Hyperparameter Tuning
 
 | Hyperparameter | Tried Values      | Final Value | Notes                                      |
 |----------------|------------------|-------------|--------------------------------------------|
@@ -95,7 +95,7 @@ python evaluate.py
 | pad_token_id   | eos_token_id     | eos_token_id| Used to prevent warnings in generation       |
 
 ---
-## ???? Example Interactions
+## Example Interactions
 
 **Patient:** What are the symptoms of diabetes?
 **Chatbot:** Some common symptoms of diabetes include frequent urination, excessive thirst, unexplained weight loss, and fatigue.
@@ -104,14 +104,14 @@ python evaluate.py
 **Chatbot:** Sorry, I can only answer healthcare-related questions.
 
 ---
-## ???? Limitations
+## Limitations
 
 - Only answers healthcare-related questions
 - May not address rare diseases or emergencies
 - BLEU and ROUGE-L scores are low due to limited data and model size
 
 ---
-## ????️ Project Structure
+## Project Structure
 
 ```
 Summative_Domain_specific_chatbot/
@@ -127,10 +127,11 @@ Summative_Domain_specific_chatbot/
 ```
 
 ---
-## ???? Acknowledgments
+## Acknowledgments
 
 - **Hugging Face**: For the Transformers library and pre-trained models
 - **Gradio**: For the web interface framework
 
 ---
-**Happy Healthcare Chatbotting! ????????**
+
+**Happy Healthcare Chatbotting! **
