@@ -3,7 +3,7 @@ import gradio as gr
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-model_path = "./models/simple_chatbot"  # or your actual model path
+model_path = "Amandine0610/simple_chatbot"  # or your actual model path
 tokenizer = AutoTokenizer.from_pretrained(model_path)
 model = AutoModelForCausalLM.from_pretrained(model_path)
 
