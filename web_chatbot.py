@@ -56,4 +56,8 @@ iface = gr.Interface(
 
 if __name__ == "__main__":
     # create the public link
-    iface.launch(share=True)
+    iface.launch(
+        server_name="0.0.0.0",
+        server_port=int(os.environ.get("PORT", 7860)),
+        share=False
+                )
