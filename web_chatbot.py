@@ -1,3 +1,4 @@
+# web_chatbot.py
 import os
 import gradio as gr
 import torch
@@ -46,19 +47,40 @@ def chat_with_bot(user_input):
     doctor_response = response.split("Doctor:")[-1].strip()
     doctor_response = clean_response(doctor_response)
     return doctor_response
+custom_css = """
+#component-0 {background: #f0f4f8;}
+#component-1 textarea {background: #fffbe7; border-radius: 8px;}
+#component-3 textarea {background: #e6f7fa; border-radius: 8px;}
+#component-5 {background: #f0f4f8;}
+.gr-button-primary {background: #ff6600; color: white;}
+"""
 
 iface = gr.Interface(
     fn=chat_with_bot,
-    inputs=gr.Textbox(lines=2, label="Your question"),
-    outputs=gr.Textbox(label="Our Response"),
+    inputs=gr.Textbox(lines=2, label="Your Medical question"),
+    outputs=gr.Textbox(label="Assistant"),
     title="🏥 Healthcare Chatbot",
-    description="Ask a medical question and get a response from the chatbot."
+        description=(
+        "Ask a medical question and get a response from the chatbot.<br>"
+        "<b>Note:</b> This chatbot provides general health information only. "
+        "For emergencies or specific medical advice, consult a healthcare professional."
+    ),
+    theme="soft",
+    css=custom_css,
+    allow_flagging="never",
+    examples=[
+        ["What are the symptoms of diabetes?"],
+        ["How can I prevent heart disease?"],
+        ["I have a headache and fever, what should I do?"],
+        ["How do I fix my car engine?"]
+    ]
 )
+
 
 if __name__ == "__main__":
     # create the public link
-    iface.launch(
+    iface.launch( 
         server_name="0.0.0.0",
         server_port=int(os.environ.get("PORT", 7860)),
         share=False
-                )
+        )
