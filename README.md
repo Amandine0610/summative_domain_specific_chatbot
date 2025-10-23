@@ -1,135 +1,346 @@
-# Healthcare Chatbot
+# Modeling Human Activity States Using Hidden Markov Models
 
-A healthcare question chatbot, built using a fine-tuned Hugging Face Transformer model. It is an end-to-end project from data preprocessing to deployment with generative question-answering for medical and health questions.
-
----
-##  Project Overview
-
-The healthcare chatbot is designed to:
-- Parse and respond to health-related questions
-- Provide relevant medical information and advice
-- Reasonably reject out-of-domain questions
-- Offer an intuitive web interface for interaction with users
-
-*** Disclaimer ***: This chatbot provides general health information only. Always medical professionals should be consulted for medical advice, diagnosis, or treatment.
+A comprehensive implementation of Hidden Markov Models (HMM) for human activity recognition using accelerometer and gyroscope sensor data. This project demonstrates the complete pipeline from data collection to model evaluation for recognizing activities like standing, walking, jumping, and being still.
 
 ---
+
+## Project Overview
+
+This project implements a complete system for human activity recognition that:
+- Collects or generates realistic sensor data from accelerometer and gyroscope
+- Extracts comprehensive time-domain and frequency-domain features
+- Trains Hidden Markov Models to recognize activity patterns
+- Uses the Viterbi algorithm for optimal state sequence decoding
+- Evaluates model performance with detailed metrics
+- Provides visualizations of results and model parameters
+
+**Activities Recognized:**
+- **Standing**: Stationary upright position
+- **Walking**: Regular locomotion with periodic patterns
+- **Jumping**: High-energy vertical movements
+- **Still**: No movement (device at rest)
+
+---
+
 ## Features
 
-- **Domain-Specific Responses**: Trained on healthcare data only
-- **Out-of-Domain Detection**: Politely rejects non-healthcare queries
-- **Web Interface**: Simple Gradio-based UI for ease of interaction
-- **Evaluation Metrics**: BLEU and ROUGE-L for quantitative assessment
+- **Realistic Data Generation**: Synthetic sensor data that mimics real smartphone sensors
+- **Comprehensive Feature Extraction**: 100+ time and frequency domain features
+- **HMM Implementation**: Full Hidden Markov Model with Gaussian emissions
+- **Viterbi Decoding**: Optimal activity sequence prediction
+- **Performance Evaluation**: Sensitivity, specificity, and accuracy metrics
+- **Rich Visualizations**: Transition matrices, activity sequences, and feature distributions
+- **Real Data Support**: Easy integration with actual sensor data from mobile apps
 
 ---
+
 ## Requirements
 
 - Python 3.8+
-- CUDA-compatible GPU (optional) or CPU
+- Required packages listed in `requirements.txt`
 
 Install dependencies:
-```sh
+```bash
 pip install -r requirements.txt
 ```
 
----
-
-## Dataset
-
-Project uses a healthcare Q&A dataset (`data/ai-medical-chatbot.csv`) with columns:
-- `Description` (optional/context)
-- `Patient` (user question)
-- `Doctor` (reference answer)
-
-obtained from kaggle datasets
+**Key Dependencies:**
+- `numpy`, `pandas`, `scipy` - Scientific computing
+- `scikit-learn` - Machine learning utilities
+- `hmmlearn` - Hidden Markov Model implementation
+- `matplotlib`, `seaborn`, `plotly` - Visualization
+- `librosa` - Signal processing
+- `jupyter` - Interactive notebooks
 
 ---
 
-## Training
+## Quick Start
 
-Train the chatbot using:
-```sh
-python train.py
+### Option 1: Run the Demo Script
+```bash
+python demo_hmm_activity.py
 ```
-The model and tokenizer will be saved in `./models/simple_chatbot`.
 
----
-
-## Usage
-
-### Web Interface
-
-Launch the Gradio web interface:
-```sh
-python web_chatbot.py
+### Option 2: Use the Jupyter Notebook
+```bash
+jupyter notebook notebooks/human_activity_hmm.ipynb
 ```
-- Enter your health question in the textbox.
-- The chatbot will respond with a relevant answer.
-- Out-of-domain questions will be courteously declined.
 
----
+### Option 3: Use Individual Modules
+```python
+from src.data_collection import ActivityDataGenerator
+from src.feature_extraction import FeatureExtractor
+from src.hmm_model import ActivityHMM
 
-## Evaluation
+# Generate data
+generator = ActivityDataGenerator(sampling_rate=50)
+dataset = generator.generate_dataset(samples_per_activity=12)
 
-Evaluate your chatbot using BLEU and ROUGE-L:
-```sh
-python evaluate.py
+# Extract features
+extractor = FeatureExtractor(window_size=2.0, overlap=0.5)
+features = extractor.extract_features_from_dataset(dataset)
+
+# Train HMM
+hmm_model = ActivityHMM(n_states=4)
+hmm_model.fit(features)
+
+# Evaluate
+metrics = hmm_model.evaluate(test_data)
 ```
-**Results on example data:**
-- **BLEU score:** 0.50
-- **ROUGE-L F1:** 0.08
 
 ---
 
-## Hyperparameter Tuning
+## Data Collection
 
-| Hyperparameter | Tried Values      | Final Value | Notes                                      |
-|----------------|------------------|-------------|--------------------------------------------|
-| Model          | distilgpt2, gpt2 | distilgpt2  | Used distilgpt2 for faster training        |
-| Learning rate  | 5e-5 (default)   | 5e-5        | Used default for AdamW optimizer           |
-| Batch size     | 2, 4             | 4           | Chose 4 for balance of speed and memory    |
-| Epochs         | 1, 3, 5          | 3           | 3 gave best qualitative results            |
-| Max length     | 100, 150         | 100         | 100 tokens for generated responses         |
-| Temperature    | 0.7, 1.0         | 0.7         | 0.7 for more focused, relevant answers     |
-| do_sample      | True, False      | True        | Sampling enabled for more diverse outputs  |
-| pad_token_id   | eos_token_id     | eos_token_id| Used to prevent warnings in generation       |
+### Using Real Sensor Data
+
+1. **Install a sensor logging app:**
+   - **Sensor Logger** (iOS/Android) - Recommended
+   - **Physics Toolbox Accelerometer** (Android)
+
+2. **Configure settings:**
+   - Sampling rate: 50-100 Hz
+   - Sensors: Accelerometer (x,y,z) + Gyroscope (x,y,z)
+
+3. **Record activities:**
+   - Each activity: 5-10 seconds
+   - Repeat: ~12 times per activity
+   - Export as CSV files
+
+4. **Load real data:**
+```python
+from src.data_collection import load_real_sensor_data
+real_data = load_real_sensor_data('path/to/sensor_data.csv')
+```
+
+### Using Synthetic Data
+
+The project includes a sophisticated synthetic data generator that creates realistic sensor patterns:
+
+```python
+generator = ActivityDataGenerator(sampling_rate=50)
+dataset = generator.generate_dataset(
+    samples_per_activity=12,
+    duration_per_sample=8.0
+)
+```
 
 ---
-## Example Interactions
 
-**Patient:** What are the symptoms of diabetes?
-**Chatbot:** Some common symptoms of diabetes include frequent urination, excessive thirst, unexplained weight loss, and fatigue.
+## Feature Extraction
 
-**Patient:** How do I fix my car engine?
-**Chatbot:** Sorry, I can only answer healthcare-related questions.
+The system extracts comprehensive features from sliding windows of sensor data:
+
+### Time-Domain Features (per axis)
+- Statistical: mean, std, variance, min, max, range, median
+- Higher-order: skewness, kurtosis
+- Energy-based: RMS, energy, signal magnitude area (SMA)
+- Temporal: zero-crossing rate, mean absolute deviation
+
+### Frequency-Domain Features (per axis)
+- Spectral: dominant frequency, centroid, rolloff, energy
+- Information: spectral entropy
+- FFT-based: frequency components and magnitudes
+
+### Cross-Axis Features
+- Vector magnitudes for accelerometer and gyroscope
+- Correlations between axes
+- Combined sensor features
+
+**Total Features:** ~100+ features per window
 
 ---
-## Limitations
 
-- Only answers healthcare-related questions
-- May not address rare diseases or emergencies
-- BLEU and ROUGE-L scores are low due to limited data and model size
+## Hidden Markov Model
+
+### Model Architecture
+- **Hidden States**: 4 states corresponding to activities
+- **Observations**: Feature vectors from sensor data
+- **Emission Model**: Gaussian distributions with full covariance
+- **Transition Model**: Learned probability matrix between activities
+
+### Key Algorithms
+- **Training**: Baum-Welch algorithm (via hmmlearn)
+- **Decoding**: Viterbi algorithm for optimal state sequences
+- **Evaluation**: Forward-backward algorithm for likelihood
+
+### Model Components
+```python
+hmm_model = ActivityHMM(
+    n_states=4,                    # One per activity
+    covariance_type="full",        # Full covariance matrices
+    random_state=42               # Reproducible results
+)
+```
 
 ---
+
+## Evaluation Metrics
+
+The system provides comprehensive evaluation following the project requirements:
+
+| Metric | Description |
+|--------|-------------|
+| **Sensitivity** | True positive rate (recall) per activity |
+| **Specificity** | True negative rate per activity |
+| **Overall Accuracy** | Correct predictions / total predictions |
+| **Precision** | Positive predictive value per activity |
+| **F1-Score** | Harmonic mean of precision and recall |
+
+### Sample Results Table
+```
+State (Activity)  | Number of Samples | Sensitivity | Specificity | Overall Accuracy
+------------------|-------------------|-------------|-------------|------------------
+standing          | 45                | 0.889       | 0.967       | 0.875
+walking           | 48                | 0.917       | 0.956       | 0.875
+jumping           | 42                | 0.952       | 0.989       | 0.875
+still             | 39                | 0.821       | 0.978       | 0.875
+```
+
+---
+
+## Visualizations
+
+The project includes rich visualizations:
+
+1. **Sensor Data Plots**: Raw accelerometer and gyroscope signals
+2. **Feature Distributions**: Box plots showing feature separability
+3. **Transition Matrix**: Heatmap of state transition probabilities
+4. **Prediction Sequences**: True vs predicted activity over time
+5. **Confusion Matrix**: Classification performance breakdown
+
+---
+
 ## Project Structure
 
 ```
-Summative_Domain_specific_chatbot/
-├── data/
-│   └── ai-medical-chatbot.csv
-├── models/
-│   └── simple_chatbot/
-├── train.py
-├── web_chatbot.py
-├── evaluate.py
-├── requirements.txt
-└── README.md
+workspace/
+├── src/                          # Source code modules
+│   ├── data_collection.py        # Data generation and loading
+│   ├── feature_extraction.py     # Feature extraction pipeline
+│   └── hmm_model.py             # HMM implementation and evaluation
+├── notebooks/                    # Jupyter notebooks
+│   └── human_activity_hmm.ipynb # Complete analysis notebook
+├── data/                         # Generated datasets
+│   ├── synthetic_activity_data.csv
+│   └── extracted_features.csv
+├── results/                      # Model outputs and metrics
+│   ├── trained_hmm_model.pkl
+│   ├── evaluation_results.csv
+│   └── detailed_metrics.csv
+├── demo_hmm_activity.py         # Demonstration script
+├── requirements.txt             # Python dependencies
+└── README.md                   # This file
 ```
 
 ---
-## Acknowledgments
 
-- **Hugging Face**: For the Transformers library and pre-trained models
+## Advanced Usage
+
+### Custom Feature Selection
+```python
+# Use specific features only
+feature_columns = ['acc_x_std', 'acc_y_std', 'acc_z_std', 'acc_sma']
+hmm_model.fit(train_data, feature_columns=feature_columns)
+```
+
+### Model Persistence
+```python
+# Save trained model
+hmm_model.save_model('my_model.pkl')
+
+# Load model later
+new_model = ActivityHMM()
+new_model.load_model('my_model.pkl')
+```
+
+### Real-time Prediction
+```python
+# Extract features from new data window
+new_features = extractor.extract_window_features(new_window)
+
+# Predict activity
+predicted_state, log_prob = hmm_model.predict(new_features)
+activity = hmm_model.state_to_activity[predicted_state[0]]
+```
+
+---
+
+## Performance Optimization
+
+### Tips for Better Results
+
+1. **Data Quality**:
+   - Use consistent phone orientation
+   - Ensure stable sampling rate
+   - Collect diverse samples per activity
+
+2. **Feature Engineering**:
+   - Experiment with window sizes (1-4 seconds)
+   - Try different overlap ratios (0.25-0.75)
+   - Add domain-specific features
+
+3. **Model Tuning**:
+   - Adjust covariance type (`"full"`, `"diag"`, `"tied"`)
+   - Experiment with number of Gaussian components
+   - Use cross-validation for hyperparameter selection
+
+---
+
+## Real-World Applications
+
+- **Health Monitoring**: Track daily activity patterns and exercise
+- **Fitness Apps**: Automatic workout recognition and counting
+- **Smart Home**: Context-aware automation based on user activity
+- **Elderly Care**: Fall detection and activity monitoring
+- **Sports Analytics**: Performance analysis and technique assessment
+
+---
+
+## Limitations and Future Work
+
+### Current Limitations
+- Synthetic data may not capture all real-world variations
+- Limited to four basic activities
+- Assumes consistent phone placement and orientation
+- No handling of transition activities or unknown states
+
+### Potential Improvements
+1. **More Activities**: Add running, cycling, climbing stairs
+2. **Hierarchical HMMs**: Model sub-activities and transitions
+3. **Deep Learning**: Compare with LSTM/CNN approaches
+4. **Online Learning**: Adapt model to individual users
+5. **Sensor Fusion**: Incorporate additional sensors (magnetometer, barometer)
+6. **Robust Features**: Handle orientation and placement variations
+
+---
+
+## Contributing
+
+Contributions are welcome! Areas for improvement:
+- Additional feature extraction methods
+- Support for more sensor types
+- Real-time processing optimizations
+- Mobile app integration
+- Comparison with other ML approaches
+
+---
+
+## References
+
+1. Rabiner, L. R. (1989). A tutorial on hidden Markov models and selected applications in speech recognition.
+2. Lara, O. D., & Labrador, M. A. (2013). A survey on human activity recognition using wearable sensors.
+3. Bulling, A., et al. (2014). A tutorial on human activity recognition using body-worn inertial sensors.
+
+---
+
+## License
+
+This project is provided for educational purposes. Please cite appropriately if used in academic work.
+
+---
+
+**Happy Activity Recognition!** 🏃‍♀️📱🤖 Transformers library and pre-trained models
 - **Gradio**: For the web interface framework
 
 ---
